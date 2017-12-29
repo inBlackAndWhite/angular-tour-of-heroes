@@ -30,7 +30,7 @@ Files generated:
 ```
 
 Set properties:
-```js
+```ts
 // app/heroes/heroes.component.ts
 
 import { Component, OnInit } from '@angular/core';
@@ -69,7 +69,7 @@ Display the component in the application template
 #### Create a Class
 
 In order to extend our heroes abilities, let's extract that logic to a separate class:
-```js
+```ts
 // src/app/hero.ts
 
 export class Hero {
@@ -79,7 +79,7 @@ export class Hero {
 ```
 
 In `heroes.component`, let's import the `Hero` class and update the hero property:
-```js
+```ts
 // app/heroes/heroes.component.ts
 
 import { Hero } from '../hero';
@@ -97,4 +97,52 @@ Update the application template accordingly to the new property structure:
 <h2>{{hero.name}} Details</h2>
 <div><span>id: </span>{{hero.id}}</div>
 <div><span>name: </span>{{hero.name}}</div>
-``
+```
+
+#### Filters
+
+Modify the output with filters:
+
+* Uppercase
+
+hero.name binding:
+```html
+<!-- app/heroes/heroes.component.html -->
+<h2>{{ hero.name | uppercase }} Details</h2>
+```
+
+#### Two-way binding
+
+[(ngModel)] is Angular's two-way data binding syntax.
+
+Here it binds the hero.name property to the HTML textbox so that data can flow in both directions: from the hero.name property to the textbox, and from the textbox back to the hero.name.
+
+```html
+<!-- app/heroes/heroes.component.html -->
+
+<div>
+    <label>name:
+      <input [(ngModel)]="hero.name" placeholder="name">
+    </label>
+</div>
+```
+
+Since `ngModel` belongs to the FormsModule, we need to import it in order to use it. Import the module and add it to the `@NgModule` external modules array:
+```ts
+// app.module.ts
+
+import { FormsModule } from '@angular/forms';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeroesComponent
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+```
