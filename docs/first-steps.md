@@ -338,7 +338,7 @@ Let's add the new component to the `heroes.component` template:
 <app-hero-detail [hero]="selectedHero"></app-hero-detail>
 ```
 
-#### Services
+### Services
 
 Since the logic for fetching data does not belong in the component, it will now be delegated to a service, that can be injected and shared among other components.
 
@@ -420,7 +420,6 @@ export class HeroesComponent implements OnInit {
  Import the Observable in the service and update the `getHeroes()` function:
  ```ts
  // app/hero.service.ts
-
  import { Observable } from 'rxjs/Observable';
  import { of } from 'rxjs/observable/of';
 
@@ -433,7 +432,6 @@ export class HeroesComponent implements OnInit {
 Subscribe in `HeroesComponent`:
 ```ts
 // app/heroes/heroes.component.ts
-
 getHeroes(): void {
   this.heroService.getHeroes()
       .subscribe(heroes => this.heroes = heroes);
@@ -441,3 +439,71 @@ getHeroes(): void {
 ```
 
 Now, instead of waiting for a list of heroes from the `getHeroes()`, it waits for an `Observable`. The Observable is responsible for emitting the data when it arrives. Delayed or not, this will prevent the browser from freezing. When the heroes array is delivered from server and emitted by the Observer the the `subscribe()` function passes it as a callback, setting the property.
+
+#### Messages
+
+```sh
+🌹 ng generate component messages
+```
+
+```html
+<!-- app/app.component.html -->
+<app-messages></app-messages>
+```
+
+```sh
+🌹 ng generate service message --module=app
+```
+
+```ts
+// app/message.service.ts
+
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class MessageService {
+  messages: string[] = [];
+
+  add(message: string) {
+    this.messages.push(message);
+  }
+
+  clear() {
+    this.messages = [];
+  }
+}
+```
+
+```ts
+// app/hero.service.ts
+import { MessageService } from './message.service';
+
+constructor(private messageService: MessageService) { }
+
+getHeroes(): Observable<Hero[]> {
+  // Todo: send the message _after_ fetching the heroes
+  this.messageService.add('HeroService: fetched heroes');
+  return of(HEROES);
+}
+```
+
+```ts
+// app/messages/messages.component.ts
+import { MessageService } from '../message.service';
+
+constructor(public messageService: MessageService) {}
+```
+> Angular only binds to public component properties.
+
+```html
+<!-- app/messages/messages.component.html -->
+
+<div *ngIf="messageService.messages.length">
+
+  <h2>Messages</h2>
+  <button class="clear"
+          (click)="messageService.clear()">clear</button>
+  <div *ngFor='let message of messageService.messages'> {{message}} </div>
+
+</div>
+```
