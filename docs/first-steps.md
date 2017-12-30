@@ -337,3 +337,107 @@ Let's add the new component to the `heroes.component` template:
 <!-- app/heroes/heroes.component.html -->
 <app-hero-detail [hero]="selectedHero"></app-hero-detail>
 ```
+
+#### Services
+
+Since the logic for fetching data does not belong in the component, it will now be delegated to a service, that can be injected and shared among other components.
+
+```sh
+🌹 ng generate service hero
+```
+
+```ts
+// app/hero.service.ts
+
+import { Injectable } from '@angular/core';
+import { Hero } from './hero';
+import { HEROES } from './mock-heroes';
+
+@Injectable()
+export class HeroService {
+
+  constructor() { }
+
+  getHeroes(): Hero[] {
+    return HEROES;
+  }
+}
+```
+
+Let's add the service to the dependency injection system and provide it through the `appModule`.
+One way of doing this is on service generation:
+
+```sh
+🌹 ng generate service hero --module=app
+```
+
+This would have added the service to the list of `providers` in the `app.module`, that will create a single instance of the service:
+```ts
+// /app/app.module.ts
+import { HeroService } from './hero.service';
+
+providers: [ HeroService ],
+```
+
+Update the component to use the service. Delete the `HEROES` import, import the service and add it to the constructor. Create a function `getHeroes()` to set the data and add a call to the function on `ngOnInit()`:
+
+```ts
+// app/heroes/heroes.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { Hero } from '../hero';
+import { HeroService } from '../hero.service';
+
+@Component({
+  selector: 'app-heroes',
+  templateUrl: './heroes.component.html',
+  styleUrls: ['./heroes.component.css']
+})
+export class HeroesComponent implements OnInit {
+  heroes: Hero[];
+  selectedHero: Hero;
+
+  onSelect(hero: Hero): void {
+    this.selectedHero = hero;
+  }
+
+  getHeroes(): void {
+    this.heroes = this.heroService.getHeroes();
+  }
+
+  constructor(private heroService: HeroService) { }
+
+  ngOnInit() {
+    this.getHeroes();
+  }
+
+}
+```
+ This approach is fine because data is not being fetched from a remote server. It relies on synchronous response. The service must wait for the data to be delivered. If for some reason the response is delayed, then the browser would freeze until data is actually delivered.
+
+ A better method is to design `getHeroes()` service function to fetch the data asynchronously. One way of doing this is returning an `Observable`.
+
+ Import the Observable in the service and update the `getHeroes()` function:
+ ```ts
+ // app/hero.service.ts
+
+ import { Observable } from 'rxjs/Observable';
+ import { of } from 'rxjs/observable/of';
+
+ getHeroes(): Observable<Hero[]> {
+  return of(HEROES);
+}
+```
+> of(HEROES) returns an Observable<Hero[]> that emits a single value, the array of mock heroes.
+
+Subscribe in `HeroesComponent`:
+```ts
+// app/heroes/heroes.component.ts
+
+getHeroes(): void {
+  this.heroService.getHeroes()
+      .subscribe(heroes => this.heroes = heroes);
+}
+```
+
+Now, instead of waiting for a list of heroes from the `getHeroes()`, it waits for an `Observable`. The Observable is responsible for emitting the data when it arrives. Delayed or not, this will prevent the browser from freezing. When the heroes array is delivered from server and emitted by the Observer the the `subscribe()` function passes it as a callback, setting the property.
