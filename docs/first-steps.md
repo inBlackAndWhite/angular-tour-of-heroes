@@ -241,3 +241,38 @@ Some styles:
   border-radius: 4px 0 0 4px;
 }
 ```
+
+#### Event binding
+
+Angular's event binding syntax:
+```html
+<!-- app/heroes/heroes.component.html -->
+<li *ngFor="let hero of heroes" (click)="onSelect(hero)">
+```
+
+Add `onSelect()` function to the component:
+```ts
+// app/heroes/heroes.component.ts
+
+selectedHero: Hero;
+
+onSelect(hero: Hero): void {
+  this.selectedHero = hero;
+}
+```
+
+Update the template with `*ngIf` to display the information only if `selectedHero` is set:
+```html
+<!-- app/heroes/heroes.component.html -->
+<div *ngIf="selectedHero">
+  <h2>{{selectedHero.name | uppercase}} Details</h2>
+  <div><span>id: </span>{{selectedHero.id}}</div>
+  <div><span>name: </span>{{selectedHero.name}}</div>
+
+  <div>
+    <label>name:
+      <input [(ngModel)]="selectedHero.name" placeholder="name">
+    </label>
+  </div>
+</div>
+```
