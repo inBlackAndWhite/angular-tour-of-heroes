@@ -287,3 +287,53 @@ The class binding makes allows adding and removing a CSS class conditionally.
     [class.selected]="hero === selectedHero"
     (click)="onSelect(hero)">
 ```
+
+#### Hero Details Component
+
+Since each component should have its own responsibility, let's split the `HeroesComponent` into two.
+So displaying the list of heroes will be managed by `HeroesComponent` and displaying and editing a single hero will be left to `HeroDetailComponent`.
+
+```sh
+🌹 ng generate component hero-detail
+```
+
+Let's move the single hero template elements to `hero-detail` component.
+```html
+<!-- app/heroes/hero-detail.component.html -->
+
+<div *ngIf="hero">
+  <h2>{{hero.name | uppercase}} Details</h2>
+  <div><span>id: </span>{{hero.id}}</div>
+  <div><span>name: </span>{{hero.name}}</div>
+
+  <div>
+    <label>name:
+      <input [(ngModel)]="hero.name" placeholder="name">
+    </label>
+  </div>
+</div>
+```
+
+ Import the `Hero` class to the new component. In order to access the `hero` property from `hero.component` it is necessary to add the Input decorator:
+ ```ts
+ // app/heroes/hero-detail.component.ts
+
+import { Component, OnInit, Input } from '@angular/core';
+import { Hero } from '../hero';
+
+export class HeroDetailComponent implements OnInit {
+  @Input() hero: Hero;
+
+  constructor() { }
+
+  ngOnInit() {
+  }
+
+}
+ ```
+
+Let's add the new component to the `heroes.component` template:
+```html
+<!-- app/heroes/heroes.component.html -->
+<app-hero-detail [hero]="selectedHero"></app-hero-detail>
+```
