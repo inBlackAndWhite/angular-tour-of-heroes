@@ -276,3 +276,14 @@ Update the template with `*ngIf` to display the information only if `selectedHer
   </div>
 </div>
 ```
+
+#### Class Binding
+
+The class binding makes allows adding and removing a CSS class conditionally.
+```html
+<!-- app/heroes/heroes.component.html -->
+
+<li *ngFor="let hero of heroes"
+    [class.selected]="hero === selectedHero"
+    (click)="onSelect(hero)">
+```
