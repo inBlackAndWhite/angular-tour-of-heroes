@@ -507,3 +507,41 @@ constructor(public messageService: MessageService) {}
 
 </div>
 ```
+
+### Routing
+
+```sh
+🌹 ng generate module app-routing --flat --module=app
+```
+
+Let's update the router to export the `RouterModule`, so components can access it. Add a constant routes that map `path` to the components. Initialize the router with `imports` and configure it to root level:
+```ts
+// app/app-routing.module.ts
+
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { HeroesComponent } from './heroes/heroes.component';
+
+const routes: Routes = [
+  { path: 'heroes', component: HeroesComponent }
+];
+
+@NgModule({
+  imports: [ RouterModule.forRoot(routes) ],
+  exports: [ RouterModule ]
+})
+export class AppRoutingModule { }
+```
+
+Update the app template so it displays the components accordingly to the url and a matching nav link:
+```html
+<!-- app/app.component.html -->
+<h1>{{title}}</h1>
+
+<nav>
+  <a routerLink="/heroes">Heroes</a>
+</nav>
+
+<router-outlet></router-outlet>
+<app-messages></app-messages>
+```
