@@ -817,6 +817,8 @@ export class InMemoryDataService implements InMemoryDbService {
 }
 ```
 
+#### GET
+
 Add the http client to the hero service. Update `getHeroes()` to use it:
 ```ts
 // app/hero.service.ts
@@ -871,5 +873,34 @@ private handleError<T> (operation = 'operation', result?: T) {
     // Let the app keep running by returning an empty result.
     return of(result as T);
   };
+}
+```
+
+#### PUT
+
+```html
+<!-- app/hero-detail/hero-detail.component.html  -->
+<button (click)="save()">save</button>
+```
+
+```ts
+// app/hero-detail/hero-detail.component.ts
+save(): void {
+   this.heroService.updateHero(this.hero)
+     .subscribe(() => this.goBack());
+ }
+```
+
+```ts
+// app/hero.service.ts
+const httpOptions = {
+  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+};
+
+updateHero (hero: Hero): Observable<any> {
+  return this.http.put(this.heroesUrl, hero, httpOptions).pipe(
+    tap(_ => this.log(`updated hero id=${hero.id}`)),
+    catchError(this.handleError<any>('updateHero'))
+  );
 }
 ```
