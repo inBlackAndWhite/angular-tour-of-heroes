@@ -746,7 +746,6 @@ export class HeroDetailComponent implements OnInit {
 
 ```ts
 // app/hero.service.ts
-content_copy
 getHero(id: number): Observable<Hero> {
   this.messageService.add(`HeroService: fetched hero id=${id}`);
   return of(HEROES.find(hero => hero.id === id));
@@ -756,4 +755,85 @@ getHero(id: number): Observable<Hero> {
 Go back button
 ```html
 <button (click)="goBack()">go back</button>
+```
+
+### Persist Data - HTTP
+
+Enable HTTP services:
+```ts
+// app/app.module.ts
+import { HttpClientModule } from '@angular/common/http';
+
+imports: [
+  BrowserModule,
+  FormsModule,
+  AppRoutingModule,
+  HttpClientModule
+]
+```
+
+Mimic a remote data server:
+```sh
+🌹 npm install angular-in-memory-web-api --save
+```
+
+```ts
+// app/app.module.ts
+import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
+import { InMemoryDataService }  from './in-memory-data.service';
+
+imports: [
+  BrowserModule,
+  FormsModule,
+  AppRoutingModule,
+  HttpClientModule,
+  HttpClientInMemoryWebApiModule.forRoot(
+    InMemoryDataService, { dataEncapsulation: false }
+  )
+]
+
+
+```
+
+Add data to replace `mock-heroes.ts`:
+```ts
+// app/in-memory-data.service.ts
+import { InMemoryDbService } from 'angular-in-memory-web-api';
+
+export class InMemoryDataService implements InMemoryDbService {
+  createDb() {
+    const heroes = [
+      { id: 11, name: 'Mr. Nice' },
+      { id: 12, name: 'Narco' },
+      { id: 13, name: 'Bombasto' },
+      { id: 14, name: 'Celeritas' },
+      { id: 15, name: 'Magneta' },
+      { id: 16, name: 'RubberMan' },
+      { id: 17, name: 'Dynama' },
+      { id: 18, name: 'Dr IQ' },
+      { id: 19, name: 'Magma' },
+      { id: 20, name: 'Tornado' }
+    ];
+    return {heroes};
+  }
+}
+```
+
+Add the http client to the hero service. Update `getHeroes()` to use it:
+```ts
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+private heroesUrl = 'api/heroes';  // URL to web api
+
+constructor(
+  private http: HttpClient,
+  private messageService: MessageService) { }
+
+getHeroes (): Observable<Hero[]> {
+  return this.http.get<Hero[]>(this.heroesUrl)
+}
+
+private log(message: string) {
+  this.messageService.add('HeroService: ' + message);
+}
 ```
