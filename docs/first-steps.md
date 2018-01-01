@@ -913,7 +913,6 @@ updateHero (hero: Hero): Observable<any> {
   <label>Hero name:
     <input #heroName />
   </label>
-  <!-- (click) passes input value to add() and then clears the input -->
   <button (click)="add(heroName.value); heroName.value=''">
     add
   </button>
@@ -931,11 +930,39 @@ add(name: string): void {
 ```
 
 ```ts
-// app/hero.service.ts (addHero)
-addHero (hero: Hero): Observable<Hero> {
+// app/hero.service.ts
+addHero(hero: Hero): Observable<Hero> {
   return this.http.post<Hero>(this.heroesUrl, hero, httpOptions).pipe(
     tap((hero: Hero) => this.log(`added hero w/ id=${hero.id}`)),
     catchError(this.handleError<Hero>('addHero'))
+  );
+}
+```
+
+#### DELETE
+
+```html
+<!-- app/heroes/heroes.component.html -->
+<button class="delete" title="delete hero" (click)="delete(hero)">x</button>
+```
+
+```ts
+// app/heroes/heroes.component.ts
+delete(hero: Hero): void {
+  this.heroes = this.heroes.filter(h => h !== hero);
+  this.heroService.deleteHero(hero).subscribe();
+}
+```
+
+```ts
+// app/hero.service.ts
+deleteHero (hero: Hero | number): Observable<Hero> {
+  const id = typeof hero === 'number' ? hero : hero.id;
+  const url = `${this.heroesUrl}/${id}`;
+
+  return this.http.delete<Hero>(url, httpOptions).pipe(
+    tap(_ => this.log(`deleted hero id=${id}`)),
+    catchError(this.handleError<Hero>('deleteHero'))
   );
 }
 ```
