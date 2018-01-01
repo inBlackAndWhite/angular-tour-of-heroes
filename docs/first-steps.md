@@ -667,3 +667,93 @@ const routes: Routes = [
   { path: 'heroes', component: HeroesComponent }
 ];
 ```
+
+### Hero Details
+
+Let's extract the hero details component from the hero component and place it on its own route
+```ts
+// app/app-routing.module.ts
+import { HeroDetailComponent } from './hero-detail/hero-detail.component';
+
+const routes: Routes = [
+  { path: 'detail/:id', component: HeroDetailComponent },
+];
+```
+
+Update the dashboard and heroes components to display a link to the details:
+```html
+<a *ngFor="let hero of heroes" class="col-1-4"
+    routerLink="/detail/{{hero.id}}">
+```
+
+Clean heroes component
+```ts
+// app/heroes/heroes.component.ts
+
+export class HeroesComponent implements OnInit {
+  heroes: Hero[];
+
+  constructor(private heroService: HeroService) { }
+
+  ngOnInit() {
+    this.getHeroes();
+  }
+
+  getHeroes(): void {
+    this.heroService.getHeroes()
+    .subscribe(heroes => this.heroes = heroes);
+  }
+}
+```
+
+Fetch hero info from id in url in hero-detail component:
+```ts
+import { Component, OnInit, Input } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
+
+import { Hero } from '../hero';
+import { HeroService }  from '../hero.service';
+
+@Component({
+  selector: 'app-hero-detail',
+  templateUrl: './hero-detail.component.html',
+  styleUrls: ['./hero-detail.component.css']
+})
+export class HeroDetailComponent implements OnInit {
+  @Input() hero: Hero;
+
+  constructor(
+    private route: ActivatedRoute,
+    private heroService: HeroService,
+    private location: Location
+  ) {}
+
+  ngOnInit() {
+    this.getHero();
+  }
+
+  getHero(): void {
+    const id = +this.route.snapshot.paramMap.get('id');
+    this.heroService.getHero(id)
+      .subscribe(hero => {
+        this.hero = hero
+      });
+  }
+}
+```
+> The route.snapshot is a static image of the route information shortly after the component was created.
+
+```ts
+// app/hero.service.ts
+content_copy
+getHero(id: number): Observable<Hero> {
+  this.messageService.add(`HeroService: fetched hero id=${id}`);
+  return of(HEROES.find(hero => hero.id === id));
+}
+```
+
+Go back button
+```html
+<button (click)="goBack()">go back</button>
+```
