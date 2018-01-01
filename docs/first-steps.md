@@ -757,7 +757,7 @@ Go back button
 <button (click)="goBack()">go back</button>
 ```
 
-### Persist Data - HTTP
+### Persist Data - HTTP - CRUD
 
 Enable HTTP services:
 ```ts
@@ -791,8 +791,6 @@ imports: [
     InMemoryDataService, { dataEncapsulation: false }
   )
 ]
-
-
 ```
 
 Add data to replace `mock-heroes.ts`:
@@ -821,6 +819,7 @@ export class InMemoryDataService implements InMemoryDbService {
 
 Add the http client to the hero service. Update `getHeroes()` to use it:
 ```ts
+// app/hero.service.ts
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 private heroesUrl = 'api/heroes';  // URL to web api
@@ -835,5 +834,42 @@ getHeroes (): Observable<Hero[]> {
 
 private log(message: string) {
   this.messageService.add('HeroService: ' + message);
+}
+```
+
+#### Error handling
+
+```ts
+// app/hero.service.ts
+import { catchError, map, tap } from 'rxjs/operators';
+
+getHeroes (): Observable<Hero[]> {
+  return this.http.get<Hero[]>(this.heroesUrl)
+   .pipe(
+     tap(heroes => this.log(`fetched heroes`)),
+     catchError(this.handleError('getHeroes', []))
+   );
+}
+
+getHero(id: number): Observable<Hero> {
+  const url = `${this.heroesUrl}/${id}`;
+  return this.http.get<Hero>(url).pipe(
+    tap(_ => this.log(`fetched hero id=${id}`)),
+    catchError(this.handleError<Hero>(`getHero id=${id}`))
+  );
+}
+
+private handleError<T> (operation = 'operation', result?: T) {
+  return (error: any): Observable<T> => {
+
+    // TODO: send the error to remote logging infrastructure
+    console.error(error); // log to console instead
+
+    // TODO: better job of transforming error for user consumption
+    this.log(`${operation} failed: ${error.message}`);
+
+    // Let the app keep running by returning an empty result.
+    return of(result as T);
+  };
 }
 ```
