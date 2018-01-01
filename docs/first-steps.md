@@ -904,3 +904,38 @@ updateHero (hero: Hero): Observable<any> {
   );
 }
 ```
+
+#### POST
+
+```html
+<!-- app/heroes/heroes.component.html -->
+<div>
+  <label>Hero name:
+    <input #heroName />
+  </label>
+  <!-- (click) passes input value to add() and then clears the input -->
+  <button (click)="add(heroName.value); heroName.value=''">
+    add
+  </button>
+</div>
+```
+
+```ts
+// app/heroes/heroes.component.ts
+add(name: string): void {
+  name = name.trim();
+  if (!name) { return; }
+    this.heroService.addHero({ name } as Hero)
+                    .subscribe(hero => this.heroes.push(hero));
+}
+```
+
+```ts
+// app/hero.service.ts (addHero)
+addHero (hero: Hero): Observable<Hero> {
+  return this.http.post<Hero>(this.heroesUrl, hero, httpOptions).pipe(
+    tap((hero: Hero) => this.log(`added hero w/ id=${hero.id}`)),
+    catchError(this.handleError<Hero>('addHero'))
+  );
+}
+```
